@@ -1,0 +1,41 @@
+! ==========================================================================
+! CISCO IOS EXTENDED ACCESS CONTROL LIST (ACL)
+! Target Device: Cisco 2911 / 4321 5G-UPF Gateway Router (Packet Tracer)
+! Generated: 2026-10-15 22:44:14
+! Source: 3GPP Rel-16 NWDAF Intelligent Intrusion Detection Engine
+! ==========================================================================
+enable
+configure terminal
+
+! Remove any existing ACL with the same name to prevent rule duplication
+no ip access-list extended 5G_UPF_MITIGATION
+ip access-list extended 5G_UPF_MITIGATION
+ remark *** 5G Core User Plane Function (UPF) Ingress Filter ***
+ remark *** Auto-compiled from SHAP Feature Importance & Decision Trees ***
+
+ ! Rule for: SYNScan (5G-NIDD SYN Port Scanning probe with abnormal TTL)
+ deny tcp any 10.0.3.0 0.0.0.255 eq 80
+ deny tcp any 10.0.3.0 0.0.0.255 eq 443
+ ! Rule for: TCPDoSTargeted (High-rate targeted TCP flood exhausting 5G UPF session table)
+ deny tcp any 10.0.3.0 0.0.0.255
+ ! Rule for: UDPFlood (Volumetric UDP flood targeting 5G SIP/DNS infrastructure)
+ deny udp any 10.0.3.0 0.0.0.255 eq 53
+ deny udp any 10.0.3.0 0.0.0.255 eq 5060
+ ! Rule for: PortScan (Reconnaissance scan probing well-known 5G service ports)
+ deny tcp any 10.0.3.0 0.0.0.255 eq 22
+
+ ! Allow legitimate established return traffic (Stateful inspection match)
+ permit tcp any any established
+ ! Permit all other legitimate 5G PDU session traffic
+ permit ip any any
+
+! Apply the Extended ACL to Ingress Interface: GigabitEthernet0/0
+interface GigabitEthernet0/0
+ ip access-group 5G_UPF_MITIGATION in
+ exit
+
+end
+write memory
+! ==========================================================================
+! End of Cisco IOS Configuration
+! ==========================================================================

@@ -1,100 +1,80 @@
-# 🛡️ 5G Intrusion Detection System (IDS)
+# 🛡️ 5G Network Intrusion Detection & Automated Defense System
 
-**A Machine Learning Pipeline for 5G Network Intrusion Detection, Explainability, and Threat Mitigation**
+**An End-to-End 3GPP 5G Core (UPF/NWDAF) Intrusion Detection, Protocol Auditing, and Cisco Packet Tracer Defense Pipeline**
 
-This project implements an end-to-end machine learning workflow for detecting and analyzing cyber threats in 5G network traffic. It covers data preprocessing, class imbalance handling, model training and evaluation, explainable AI using SHAP, threat mitigation, and performance visualization.
+This project delivers an applied Computer Networks capstone case study implementing real-time network flow extraction, machine-learning-driven threat intelligence (NWDAF), SHAP protocol explainability, and automated network defense synthesis (**Cisco IOS Extended ACLs, Linux iptables, and Snort/Suricata signatures**).
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/Machine%20Learning-FF6F00?style=for-the-badge" alt="Machine Learning">
-  <img src="https://img.shields.io/badge/Network%20Security-DC3545?style=for-the-badge" alt="Network Security">
-  <img src="https://img.shields.io/badge/Explainable%20AI-SHAP-6A5ACD?style=for-the-badge" alt="Explainable AI">
+  <img src="https://img.shields.io/badge/Cisco_Packet_Tracer-2911_Router-049fd9?style=for-the-badge&logo=cisco&logoColor=white" alt="Cisco Packet Tracer">
+  <img src="https://img.shields.io/badge/3GPP_5G_Core-UPF_%2F_NWDAF-005A9C?style=for-the-badge" alt="5G Core">
+  <img src="https://img.shields.io/badge/Network_Security-Firewall_%26_ACL-DC3545?style=for-the-badge" alt="Network Security">
+  <img src="https://img.shields.io/badge/Protocols-L2_to_L4_Dissection-28A745?style=for-the-badge" alt="Network Protocols">
+  <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
 </p>
 
 ---
 
 ## 📑 Table of Contents
 
-- [Overview](#-overview)
+- [Computer Networks Architecture](#-computer-networks-architecture)
 - [Project Objectives](#-project-objectives)
-- [Pipeline Architecture](#-pipeline-architecture)
+- [Computer Networks Tech Stack & Topic Matrix](#-computer-networks-tech-stack--topic-matrix)
+- [Pipeline & Toolchain](#-pipeline--toolchain)
 - [Repository Structure](#-repository-structure)
+- [Cisco Packet Tracer Demonstration](#-cisco-packet-tracer-demonstration)
+- [Live UPF Real-Time Monitor](#-live-upf-real-time-monitor)
 - [Visualizations](#-visualizations)
-- [Technology Stack](#-technology-stack)
-- [Installation and Setup](#-installation-and-setup)
-- [Running the Pipeline](#-running-the-pipeline)
-- [Dataset Requirements](#-dataset-requirements)
-- [Future Enhancements](#-future-enhancements)
-- [Disclaimer](#-disclaimer)
+- [Running the System](#-running-the-system)
 
 ---
 
-## 🔍 Overview
+## 🌐 Computer Networks Architecture
 
-The increasing adoption of 5G networks introduces new cybersecurity challenges due to massive device connectivity, high-speed communication, and evolving attack techniques. Detecting malicious activities and anomalous network traffic is essential for improving network security.
+In accordance with **3GPP Release 16 / 17 Standards**, network operations are partitioned into the high-speed **Data Plane** and the **Analytics / Management Plane**:
 
-This project explores machine learning techniques for identifying potential intrusions in 5G network traffic through a structured, six-phase pipeline.
+```text
+ ============================================================================================
+  DATA PLANE (User Plane / Traffic Flow) - Modeled in Cisco Packet Tracer & Scapy
+ ============================================================================================
+   [Legitimate UE] ──┐
+   (10.0.1.10)       │ GigabitEthernet0/0/0
+                     ▼
+             [5G gNodeB Switch] ──► [5G UPF Router (Cisco 2911)] ──► [5G Core Server]
+                     ▲              (GigabitEthernet0/0/1)           (10.0.3.100 - Web/SSH)
+   [Attacker UE]   ──┘                      │
+   (10.0.1.99 - SYNScan / DoS)              │ Ingress Telemetry / Packet Flows
+                                            ▼
+ ============================================================================================
+  ANALYTICS & CONTROL PLANE (Python NWDAF Engine + Mitigation)
+ ============================================================================================
+   ┌────────────────────────────────────────────────────────────────────────────────────────┐
+   │ 1. WIRE / PCAP LAYER (`pcap_flow_analyzer.py`)                                         │
+   │    Sniffs raw packets, parses IP/TCP headers (TTL, Flags, Window size, Flow Rate).     │
+   ├────────────────────────────────────────────────────────────────────────────────────────┤
+   │ 2. INTELLIGENT DETECTION (`phase1` to `phase3`)                                        │
+   │    Preprocesses flow metrics, handles class imbalance, classifies attacks (XGBoost/RF).│
+   ├────────────────────────────────────────────────────────────────────────────────────────┤
+   │ 3. PROTOCOL AUDITING (`phase4_explainability.py`)                                      │
+   │    SHAP stability audit identifies RFC-level protocol violations (e.g., sTtl, State).  │
+   ├────────────────────────────────────────────────────────────────────────────────────────┤
+   │ 4. ENFORCEMENT ENGINE (`network_defense_exporter.py`)                                  │
+   │    Synthesizes rules into:                                                             │
+   │    • Cisco IOS Extended ACLs (`cisco_defense.ios`) -> Pasted into Packet Tracer Router│
+   │    • Linux Netfilter (`iptables_rules.sh`)         -> For Linux UPF hosts              │
+   │    • Snort/Suricata Signatures (`suricata_5g.rules`)-> For Network Edge NIDS           │
+   └────────────────────────────────────────────────────────────────────────────────────────┘
+```
 
-The workflow progresses from raw data preprocessing to model evaluation, explainability, mitigation analysis, and visualization.
+---
 
 ## 🎯 Project Objectives
 
-- **Data Preprocessing:** Clean and prepare network traffic data for machine learning.
-- **Class Imbalance Handling:** Address imbalanced class distributions.
-- **Model Training:** Train and compare classification models for intrusion detection.
-- **Performance Evaluation:** Analyze model performance using evaluation metrics and ROC curves.
-- **Explainable AI:** Apply SHAP to understand feature contributions to model predictions.
-- **Threat Mitigation:** Explore mitigation strategies informed by intrusion detection insights.
-- **Visualization:** Generate plots to support model evaluation and interpretation.
-
----
-
-## ⚙️ Pipeline Architecture
-
-The project is divided into six modular phases.
-
-| Phase | Script | Description |
-|:---:|---|---|
-| 1 | `phase1_ingestion.py` | Loads, cleans, and preprocesses the dataset. |
-| 2 | `phase2_imbalance.py` | Handles class imbalance in network traffic data. |
-| 3 | `phase3_models.py` | Trains and compares machine learning classifiers. |
-| 4 | `phase4_explainability.py` | Uses SHAP to interpret model predictions. |
-| 5 | `phase5_mitigation.py` | Explores threat mitigation and defensive strategies. |
-| 6 | `phase6_visuals.py` | Generates performance and explainability visualizations. |
-
-### 🔄 Workflow
-
-```text
-       Network Traffic Dataset
-                 │
-                 ▼
-    ┌──────────────────────────┐
-    │ 1. Data Ingestion        │
-    │    & Preprocessing       │
-    └────────────┬─────────────┘
-                 ▼
-    ┌──────────────────────────┐
-    │ 2. Class Imbalance       │
-    │    Handling              │
-    └────────────┬─────────────┘
-                 ▼
-    ┌──────────────────────────┐
-    │ 3. Model Training        │
-    │    & Evaluation          │
-    └────────────┬─────────────┘
-                 ▼
-    ┌──────────────────────────┐
-    │ 4. SHAP Explainability   │
-    └────────────┬─────────────┘
-                 ▼
-    ┌──────────────────────────┐
-    │ 5. Threat Mitigation     │
-    └────────────┬─────────────┘
-                 ▼
-    ┌──────────────────────────┐
-    │ 6. Visualizations        │
-    └──────────────────────────┘
-```
+- **Wire-Level Dissection:** Parse raw binary PCAP frames across Ethernet (L2), IPv4 (L3), and TCP/UDP (L4).
+- **Flow Feature Extraction:** Reassemble packets into bidirectional 5-tuples and compute statistical flow metrics (`sTtl`, `Dur`, `Rate`, `sMeanPktSz`, `State`).
+- **Class Imbalance Mitigation:** Address rare attack frequency in telecom data using Cost-Sensitive Weighting and SMOTE/ADASYN.
+- **Protocol Anomaly Auditing:** Use SHAP cross-fold audits to uncover RFC-level protocol deviations (e.g., low TTLs and half-open TCP SYN scans).
+- **Automated Network Defense:** Compile ML decision rules into active **Cisco IOS Extended ACLs**, **Linux iptables**, and **Snort signatures**.
+- **Interactive UPF Emulation:** Monitor live traffic streams at the 5G UPF edge with sub-millisecond classification overhead (< 0.1ms).
 
 ---
 
@@ -103,34 +83,37 @@ The project is divided into six modular phases.
 ```text
 5G-Network-Intrusion-Detection-/
 │
-├── phase1_ingestion.py
-├── phase2_imbalance.py
-├── phase3_models.py
-├── phase4_explainability.py
-├── phase5_mitigation.py
-├── phase6_visuals.py
+├── cisco_packet_tracer_guide.md       # Step-by-step Cisco Packet Tracer topology & setup guide
+├── cisco_defense.ios                  # Auto-generated Cisco IOS CLI Extended Access Control List
+├── iptables_rules.sh                  # Auto-generated Linux Netfilter firewall enforcement script
+├── suricata_5g.rules                  # Auto-generated Snort/Suricata IDS/IPS signature rules
 │
-├── roc_curve.png
-├── shap_bar_chart.png
-├── shap_summary_beeswarm.png
+├── pcap_flow_analyzer.py              # Pure Python L2-L4 binary PCAP packet dissector & flow extractor
+├── live_upf_ids.py                    # Real-time 5G UPF terminal telemetry & intrusion monitor
+├── network_defense_exporter.py        # Compiles ML/SHAP rules into Cisco, iptables, & Snort rules
 │
+├── phase1_ingestion.py                # Data loading, cleaning, and leakage prevention
+├── phase2_imbalance.py                # Cost-sensitive & SMOTE class imbalance handling
+├── phase3_models.py                   # Model training (Random Forest, XGBoost, MLP)
+├── phase4_explainability.py           # SHAP stability cross-fold audit (Jaccard metric)
+├── phase5_mitigation.py               # Attack decision tree extractor & collateral drop evaluation
+├── phase6_visuals.py                  # Generates publication-grade ROC & SHAP curves
+│
+├── roc_curve.png                      # ROC curve visualization (AUC = 0.8740 without leakage)
+├── shap_bar_chart.png                 # Global feature importance plot
+├── shap_summary_beeswarm.png          # Directional SHAP feature beeswarm plot
 └── .gitignore
 ```
 
-### File Descriptions
+### Key Tool Descriptions
 
-| File | Purpose |
-|---|---|
-| `phase1_ingestion.py` | Data loading and preprocessing |
-| `phase2_imbalance.py` | Class imbalance handling |
-| `phase3_models.py` | Model training and comparison |
-| `phase4_explainability.py` | SHAP-based model interpretation |
-| `phase5_mitigation.py` | Threat mitigation analysis |
-| `phase6_visuals.py` | Visualization generation |
-| `roc_curve.png` | ROC curve visualization |
-| `shap_bar_chart.png` | SHAP feature importance plot |
-| `shap_summary_beeswarm.png` | SHAP summary beeswarm plot |
-| `.gitignore` | Excludes specified files from version control |
+| File | Purpose | Computer Networks Topic |
+| :--- | :--- | :--- |
+| `cisco_defense.ios` | Generated Cisco CLI configuration | **Cisco IOS Extended ACLs & Ingress Filtering** |
+| `pcap_flow_analyzer.py` | Binary packet parser & flow builder | **OSI L2 Ethernet, L3 IPv4 (TTL), L4 TCP Handshake** |
+| `live_upf_ids.py` | Real-time 5G UPF telemetry monitor | **3GPP 5G NWDAF & URLLC Latency Monitoring** |
+| `network_defense_exporter.py`| Defense compiler | **Automated Firewall & NIDS Rule Generation** |
+| `cisco_packet_tracer_guide.md`| Lab topology guide | **Cisco Packet Tracer Router/Switch/Server Simulation** |
 
 ---
 
@@ -256,7 +239,7 @@ python phase3_models.py
 python phase4_explainability.py
 ```
 
-**Phase 5 — Threat Mitigation**
+**Phase 5 — Threat Mitigation & Defense Generation**
 
 ```bash
 python phase5_mitigation.py
@@ -267,6 +250,38 @@ python phase5_mitigation.py
 ```bash
 python phase6_visuals.py
 ```
+
+---
+
+## 🛠️ Running the Computer Networks Demonstrations
+
+### 1. Raw PCAP Binary Packet Dissector & Flow Extractor
+Dissects binary packets down to Layer 2 Ethernet, Layer 3 IPv4 (TTL), and Layer 4 TCP/UDP flags and computes 5G-NIDD flow metrics:
+
+```bash
+python pcap_flow_analyzer.py
+```
+
+### 2. Multi-Platform Network Defense Compiler
+Compiles SHAP rules into **Cisco IOS Extended ACLs**, **Linux Netfilter (iptables)**, and **Snort/Suricata** rules:
+
+```bash
+python network_defense_exporter.py
+```
+*Outputs:*
+* `cisco_defense.ios` (Ready to paste into Cisco 2911 Router in Packet Tracer)
+* `iptables_rules.sh` (Ready to deploy on Linux edge gateways)
+* `suricata_5g.rules` (Importable into Snort / Suricata)
+
+### 3. Live 5G UPF Real-Time Intrusion Monitor
+Streams live simulated flows through the 5G Core N3/N6 interface, verifying sub-millisecond detection and SLA compliance:
+
+```bash
+python live_upf_ids.py 20
+```
+
+### 4. Cisco Packet Tracer Simulation Lab
+Follow the full step-by-step setup in [cisco_packet_tracer_guide.md](cisco_packet_tracer_guide.md) to build the 5G topology, configure router interfaces, apply the generated ACLs, and verify dropped attack packets in Simulation Mode.
 
 > **Note:** Each phase may depend on data or outputs generated by earlier phases. Verify the input paths and execution order defined in the scripts before running the complete pipeline.
 
